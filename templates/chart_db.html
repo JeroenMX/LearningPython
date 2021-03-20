@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<canvas id="myChart"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.js"></script>
+
+<script lang="js">
+var json = {{ json | safe }};
+
+var postCount = json.posts.map(function(e) {
+   return e.PostCount;
+});
+
+var commentCount = json.comments.map(function(e) {
+   return e;
+});
+
+var labels = json.posts.map(function(e) {
+   return e.PostDate;
+});
+
+var ctx = document.getElementById("myChart").getContext('2d');
+var config = {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: '# of posts per day',
+            data: postCount,
+            backgroundColor: 'rgba(0, 119, 204, 0.3)',
+        },
+        {
+            label: '# of comments per day',
+            data: commentCount,
+            backgroundColor: 'rgba(100, 0, 204, 0.3)'
+        }]
+    },
+    options: {
+        annotation: {
+          annotations: [{
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            //value: json.average,
+            borderColor: 'rgb(75, 192, 192)',
+            borderWidth: 4,
+            label: {
+                enabled: false,
+                content: 'Test label'
+            }
+          }]
+        }
+    }
+};
+
+var myChart = new Chart(ctx, config);
+
+</script>
+{% endblock %}
