@@ -25,9 +25,16 @@ def getrandomdate(length):
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
     return render_template('index.html', values={"title": "test"})
+
+
+@app.route("/drawing")
+def drawing():
+    return render_template('drawing.html')
+
 
 @app.route("/chart")
 def chartindex():

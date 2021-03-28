@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<canvas id="myDrawing"></canvas>
+
+<script lang="js">
+
+    var ctx = document.getElementById("myDrawing").getContext('2d');
+
+    ctx.beginPath();
+    ctx.arc(95, 50, 40, 0, 2 * Math.PI);
+    ctx.stroke();
+
+</script>
+
+{% endblock %}

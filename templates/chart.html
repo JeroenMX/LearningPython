@@ -14,14 +14,14 @@ var config = {
     data: {
         labels: json.dates,
         datasets: [{
-            fill: false,
+            fill: true,
             label: '# of posts per day',
             data: json.posts,
             borderColor: 'rgba(0, 119, 204, 0.3)',
         },
         {
             label: '# of comments per day',
-            fill: false,
+            fill: true,
             data: json.comments,
             borderColor: 'rgba(100, 0, 204, 0.3)'
         }]
