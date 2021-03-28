@@ -5,9 +5,7 @@ from datetime import datetime, timedelta
 
 def getrandomname():
     names = ["Valentina", "Elba", "Jeroen"]
-    i = random.randint(0, len(names)-1);
-    print(i)
-    return names[i]
+    return names[random.randint(0, len(names)-1)]
 
 
 def getrandomcount(length):
