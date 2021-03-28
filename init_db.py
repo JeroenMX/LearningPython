@@ -2,6 +2,35 @@ import sqlite3
 import random
 from datetime import datetime, timedelta
 
+
+def getrandomname():
+    names = ["Valentina", "Elba", "Jeroen"]
+    i = random.randint(0, len(names)-1);
+    print(i)
+    return names[i]
+
+
+def getrandomcount(length):
+    result = []
+
+    for i in range(length):
+        result.append(random.randint(0, 50))
+
+    return result
+
+
+def getrandomdate(length):
+    result = []
+
+    now = datetime.today()
+
+    for i in range(length):
+        now = now - timedelta(days=1)
+        result.append(str(now.date()))
+
+    return result
+
+
 connection = sqlite3.connect('database.db')
 
 
@@ -10,14 +39,26 @@ with open('schema.sql') as f:
 
 cur = connection.cursor()
 
-postDate = datetime.now()
+dates = getrandomdate(25)
 
-for i in range(1000):
-    delta = random.randint(10, 240)
-    postDate = postDate - timedelta(minutes=delta)
-    cur.execute("INSERT INTO posts (title, content, created) VALUES (?, ?, ?)",
-                ('Post #' + str(i), 'Content for post #' + str(i), postDate)
-                )
+count = 1
+for date in dates:
+    postCount = random.randint(1, 10)
+
+    for pc in range(postCount):
+        cur.execute("INSERT INTO posts (title, content, created) VALUES (?, ?, ?)",
+                    ('Some posted text', 'Content for post', date)
+                    )
+
+        postId = cur.lastrowid
+
+        commentCount = random.randint(1, 10)
+
+        for cc in range(commentCount):
+            cur.execute("INSERT INTO comments (postId, name, content, created) VALUES (?, ?, ?, ?)",
+                        (postId, getrandomname(), 'this is the text for the comment', date)
+                        )
+
 
 connection.commit()
 connection.close()

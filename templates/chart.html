@@ -6,28 +6,51 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
 <script lang="js">
+
+// this function combines 2 arrays and removes duplicate values.
+Array.prototype.unique = function() {
+    var a = this.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
+};
+
+// var json is the javascript variable to hold the json passed from the server.
+// {{ json | safe }} will be replaces by the server with the actual json.
 var json = {{ json | safe }};
 
+// create the x-axis labels. a combination of dates from posts and comments.
+var labels = json.posts.map(o => o.PostDate).concat(json.comments.map(o => o.CommentDate)).unique();
+
+// get a context from the canvas to draw the chart on.
 var ctx = document.getElementById("myChart").getContext('2d');
+
+// configure the chart
 var config = {
     type: 'line',
     data: {
-        labels: json.dates,
+        labels: labels,
         datasets: [{
             fill: true,
             label: '# of posts per day',
-            data: json.posts,
+            data: json.posts.map(o => ({ y: o.PostCount, x: Date.parse(o.PostDate)})),
             borderColor: 'rgba(0, 119, 204, 0.3)',
         },
         {
             label: '# of comments per day',
             fill: true,
-            data: json.comments,
+            data: json.comments.map(o => ({ y: o.CommentCount, x: o.CommentDate})),
             borderColor: 'rgba(100, 0, 204, 0.3)'
         }]
     }
 };
 
+// render the chart given the context and configuration
 var myChart = new Chart(ctx, config);
 
 </script>
