@@ -76,7 +76,8 @@ def edit(id):
                          (title, content, id))
             conn.commit()
             conn.close()
-            return redirect(url_for('index'))
+            flash('updated!', 'success')
+            return redirect(url_for('post', post_id=post['id']))
 
     return render_template('edit.html', post=post)
 
@@ -88,7 +89,7 @@ def delete(id):
     conn.execute('DELETE FROM posts WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-    flash('"{}" was successfully deleted!'.format(post['title']))
+    flash('"{}" was successfully deleted!'.format(post['title']), 'danger')
     return redirect(url_for('index'))
 
 
