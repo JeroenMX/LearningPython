@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
 import sqlite3
 from werkzeug.exceptions import abort
+from flask_socketio import SocketIO
 
 
 def get_db_connection():
@@ -20,6 +21,7 @@ def get_post(post_id):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
+socketio = SocketIO(app)
 
 
 @app.route("/")
@@ -33,6 +35,11 @@ def index():
 @app.route("/drawing")
 def drawing():
     return render_template('drawing.html')
+
+
+@app.route("/chat")
+def tracking():
+    return render_template('chat.html')
 
 
 @app.route('/<int:post_id>')
@@ -108,7 +115,17 @@ def chartindex():
     return render_template('chart.html', json=jsonData)
 
 
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
+
+
+@socketio.on('my event')
+def handle_my_custom_event(json, methods=['GET', 'POST']):
+    print('received my event: ' + str(json))
+    socketio.emit('my response', json, callback=messageReceived)
+
+
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app, debug=True)
 
 
