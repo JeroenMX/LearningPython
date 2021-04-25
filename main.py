@@ -21,7 +21,7 @@ def get_post(post_id):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
-socketio = SocketIO(app)
+sio = SocketIO(app)
 
 
 @app.route("/")
@@ -38,8 +38,13 @@ def drawing():
 
 
 @app.route("/chat")
-def tracking():
+def chat():
     return render_template('chat.html')
+
+
+@app.route("/tracking")
+def tracking():
+    return render_template('tracking.html')
 
 
 @app.route('/<int:post_id>')
@@ -119,13 +124,23 @@ def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
 
 
-@socketio.on('my event')
+@sio.on('my event')
 def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received my event: ' + str(json))
-    socketio.emit('my response', json, callback=messageReceived)
+    sio.emit('my response', json, callback=messageReceived)
+
+
+clients = {}
+
+
+@sio.on('mouse_position')
+def handle_mouse_position(data):
+    print('received mouse position: ' + str(data) + ' sid:' + request.sid)
+    clients[request.sid] = data
+    sio.emit('all_coords', clients)
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    sio.run(app, debug=True)
 
 

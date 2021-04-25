@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<canvas id="myDrawing" style="border: 1px solid gray; width: 600px; height: 300px"></canvas>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+
+<script lang="js">
+
+// create a socket connection with the server.
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+// get a reference to the canvas.
+var canvas = document.getElementById('myDrawing');
+// get a 2d drawing context.
+var context = canvas.getContext('2d');
+
+// start doing stuff when jquery is initialized.
+$(function() {
+    var currentMousePos = { x: -1, y: -1 };
+
+    // start listening to mousemove events on the canvas.
+    canvas.addEventListener('mousemove', function (event) {
+        // get the current mouse position;
+        var mousePos = getMousePos(canvas, event);
+        // store the mouse position in a global object we can use wherever we need to.
+        currentMousePos.x = mousePos.x;
+        currentMousePos.y = mousePos.y;
+    });
+
+    var previousMousePos = { x: -1, y: -1 };
+    // every 100 milliseconds we get the current mouse coordinates.
+    var intervalID = window.setInterval(function() {
+        // if the coordinates are different from the last time we checked we do something otherwise we don't.
+        if (previousMousePos.x !== currentMousePos.x || previousMousePos.y !== currentMousePos.y) {
+            // send the coordinates to the server.
+            socket.emit('mouse_position', {x : currentMousePos.x, y : currentMousePos.y});
+            // store them so we can use them to compare to the current coordinates next time.
+            previousMousePos.x = currentMousePos.x;
+            previousMousePos.y = currentMousePos.y;
+        }
+    }, 100);
+
+});
+
+// the mouse coordinates can only be retrieved relative to the page
+// but the drawing is done relative to the canvas.
+// therefore we need to translate the page coordinates to canvas coordinates.
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+        y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+    };
+}
+
+// we just this dictionary to store the client colors.
+var clientColors = [];
+
+// this function is called when we receive an event from the server called 'all_coords'.
+// it contains a list of all the coordinates of all the clients connected.
+socket.on("all_coords", function(data) {
+    // write the data to the console for easy inspection
+    console.log(data);
+
+    // loop through all the clients
+    for (client in data)
+    {
+        // if there's a new client connected we pick a random color and store it so we
+        // keep using the same color for that client.
+        if (clientColors[client] == undefined)
+        {
+            clientColors[client] = getRandomColor();
+        }
+
+        // get the actual coordinates for the current client from the data object.
+        coords = data[client];
+        // set the color we picked for this client.
+        context.fillStyle = clientColors[client];
+        // draw a small rectangle at the clients mouse coordinates.
+        context.fillRect(coords.x,coords.y,3,3);
+    }
+});
+
+// generate a random color
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+</script>
+
+{% endblock %}
