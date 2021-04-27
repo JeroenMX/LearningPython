@@ -10,7 +10,7 @@
 <script lang="js">
 
 // create a socket connection with the server.
-var socket = io.connect('http://' + document.domain + ':' + location.port);
+var socket = io.connect('//' + document.domain + ':' + location.port);
 // get a reference to the canvas.
 var canvas = document.getElementById('myDrawing');
 // get a 2d drawing context.
