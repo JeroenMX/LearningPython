@@ -108,8 +108,10 @@ def delete(id):
 @app.route("/chart")
 def chartindex():
     conn = get_db_connection()
-    postRows = conn.execute('SELECT COUNT(*) AS PostCount, strftime("%d-%m-%Y", created) AS PostDate FROM posts group by strftime("%d-%m-%Y", created)').fetchall()
-    commentRows = conn.execute('SELECT COUNT(*) AS CommentCount, strftime("%d-%m-%Y", created) AS CommentDate FROM comments group by strftime("%d-%m-%Y", created)').fetchall()
+    postRows = conn.execute(
+        'SELECT COUNT(*) AS PostCount, strftime("%d-%m-%Y", created) AS PostDate FROM posts group by strftime("%d-%m-%Y", created)').fetchall()
+    commentRows = conn.execute(
+        'SELECT COUNT(*) AS CommentCount, strftime("%d-%m-%Y", created) AS CommentDate FROM comments group by strftime("%d-%m-%Y", created)').fetchall()
     conn.close()
 
     posts = [dict(row) for row in postRows]
@@ -142,5 +144,3 @@ def handle_mouse_position(data):
 
 if __name__ == '__main__':
     sio.run(app, debug=True)
-
-

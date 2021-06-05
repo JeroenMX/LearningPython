@@ -1,0 +1,38 @@
+
+
+h1 {
+    border: 0px #eee solid;
+    color: #333333;
+    text-align: left;
+    padding: 15px;
+    font-family: 'Poppins', sans-serif;
+
+}
+
+.alert-tina {
+    border: 3px #eee solid;
+    color: Fuchsia;
+    text-align: left;
+    padding: 15px;
+}
+
+ body {
+        margin: 0;
+    }
+
+    .top-nav {
+        display: flex;
+        flex-direction: row;
+        background-color: yellow;
+        border: 2px solid black;
+        position: absolute;
+        width: 100%;
+    }
+
+    .top-nav * {
+        margin: 5px 10px;
+    }
+
+    #paint {
+        display: block;
+    }

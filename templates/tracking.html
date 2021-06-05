@@ -3,9 +3,40 @@
 {% block content %}
 
 <canvas id="myDrawing" style="border: 1px solid gray; width: 600px; height: 300px"></canvas>
+<input id="color-picker" value='#276cb8' />
+
+<label for="size">Choose a size:</label>
+
+<select name="size" id="size">
+  <option value="1">1</option>
+  <option selected value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+</select>
+
+<label for="size">Choose a shape:</label>
+
+<select name="shape" id="shape">
+  <option value="Circle">Circle</option>
+  <option selected value="Square">Square</option>
+  <option value="Triangle">Triangle</option>
+</select>
+
+<p>Enter your name: <br>
+<input type="text" name="username" id="username" value=""></p>
+
+
+<a href="#" id="downloadLink" download onclick="downloadImage(this);"> Download </a>
+
+List of users:
+<ul id= "userlist">
+
+</ul>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.css">
 
 <script lang="js">
 
@@ -15,6 +46,8 @@ var socket = io.connect('//' + document.domain + ':' + location.port);
 var canvas = document.getElementById('myDrawing');
 // get a 2d drawing context.
 var context = canvas.getContext('2d');
+context.fillStyle = "white";
+context.fillRect(0, 0, canvas.width, canvas.height);
 
 // start doing stuff when jquery is initialized.
 $(function() {
@@ -34,8 +67,15 @@ $(function() {
     var intervalID = window.setInterval(function() {
         // if the coordinates are different from the last time we checked we do something otherwise we don't.
         if (previousMousePos.x !== currentMousePos.x || previousMousePos.y !== currentMousePos.y) {
+
+            var color = $("#color-picker").val();
+            var size = $("#size").val();
+            var shape = $("#shape").val();
+            var username = $("#username").val();
+
             // send the coordinates to the server.
-            socket.emit('mouse_position', {x : currentMousePos.x, y : currentMousePos.y});
+            socket.emit('mouse_position', {x : currentMousePos.x, y : currentMousePos.y, color:color, size:size, shape:shape, username:username});
+
             // store them so we can use them to compare to the current coordinates next time.
             previousMousePos.x = currentMousePos.x;
             previousMousePos.y = currentMousePos.y;
@@ -66,32 +106,75 @@ socket.on("all_coords", function(data) {
 
     // loop through all the clients
     for (client in data)
-    {
-        // if there's a new client connected we pick a random color and store it so we
-        // keep using the same color for that client.
-        if (clientColors[client] == undefined)
-        {
-            clientColors[client] = getRandomColor();
-        }
 
+    {
         // get the actual coordinates for the current client from the data object.
         coords = data[client];
         // set the color we picked for this client.
-        context.fillStyle = clientColors[client];
+        context.fillStyle = coords.color;
         // draw a small rectangle at the clients mouse coordinates.
-        context.fillRect(coords.x,coords.y,3,3);
+        if (coords.shape == "Circle"){
+            drawCircle(coords.x,coords.y,coords.size,coords.color, context);
+        }
+
+        else if (coords.shape == "Triangle"){
+        drawTriangle (coords.x,coords.y,coords.color, context, coords.size);
+        }
+
+        else if (coords.shape == "Square"){
+        drawSquare (coords.x, coords.y, coords.color, context, coords.size);
+        }
+
+    if (userExists(coords.username)) {}
+    else {
+      $("#userlist").append('<li>' + coords.username + '</li>');
     }
+
 });
 
-// generate a random color
-function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+
+$('#color-picker').spectrum({
+  type: "component"
+});
+
+function drawCircle (x, y, r, color, context) {
+
+      context.beginPath();
+      context.arc(x, y, r, 0, 2 * Math.PI, false);
+      context.fillStyle = color;
+      context.fill();
 }
+
+function drawTriangle (x, y, color, context, size)
+    {
+      context.beginPath();
+      context.moveTo(x,y);
+      context.lineTo(x-size*2,y+size*2);
+      context.lineTo(x+size*2,y+size*2);
+      context.fill();
+    }
+
+
+function drawSquare (x, y, color, context, size)
+  {
+    context.beginPath();
+    context.rect(x, y, size*2, size*2);
+    context.fillStyle = color;
+    context.fill();
+
+  }
+
+function downloadImage (l)
+  {
+    var dt = canvas.toDataURL('image/jpeg');
+    l.href = dt
+  }
+
+function userExists (username)
+  {
+  return $('#userlist li:contains('+username+')').length;
+
+  }
 
 </script>
 
