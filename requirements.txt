@@ -18,7 +18,7 @@ Flask-WTF==0.14.2
 Flask-User==1.0.1.5
 
 flask-socketio==5.1.0
-eventlet==0.31.0
+eventlet
 
 # Automated tests
 pytest==3.0.5
