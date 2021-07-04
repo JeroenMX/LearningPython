@@ -138,8 +138,14 @@ clients = {}
 @sio.on('mouse_position')
 def handle_mouse_position(data):
     print('received mouse position: ' + str(data) + ' sid:' + request.sid)
-    clients[request.sid] = data
+    clients[request.sid]["data"] = data
     sio.emit('all_coords', clients)
+
+
+@sio.on('connectUser')
+def handle_connect_user(data):
+    clients[request.sid] = {"userName": data.get('userName'), "data": {}}
+    print('connectUser: ' + str(data) + ' sid:' + request.sid)
 
 
 @sio.event

@@ -33,7 +33,24 @@ List of users:
 
 </ul>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<div id="dialog-form" title="Create new user">
+  <p class="validateTips">All form fields are required.</p>
+
+  <form>
+    <fieldset>
+      <label for="name">Name</label>
+      <input type="text" name="name" id="name" value="Jane Smith" class="text ui-widget-content ui-corner-all">
+
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.css">
@@ -71,10 +88,9 @@ $(function() {
             var color = $("#color-picker").val();
             var size = $("#size").val();
             var shape = $("#shape").val();
-            var username = $("#username").val();
 
             // send the coordinates to the server.
-            socket.emit('mouse_position', {x : currentMousePos.x, y : currentMousePos.y, color:color, size:size, shape:shape, username:username});
+            socket.emit('mouse_position', {x : currentMousePos.x, y : currentMousePos.y, color:color, size:size, shape:shape});
 
             // store them so we can use them to compare to the current coordinates next time.
             previousMousePos.x = currentMousePos.x;
@@ -82,7 +98,13 @@ $(function() {
         }
     }, 100);
 
+    createUser();
 });
+
+function connectUser(userName)
+{
+  socket.emit('connectUser', { userName : userName });
+}
 
 // the mouse coordinates can only be retrieved relative to the page
 // but the drawing is done relative to the canvas.
@@ -104,32 +126,32 @@ socket.on("all_coords", function(data) {
     // write the data to the console for easy inspection
     console.log(data);
 
+    $("#userlist").empty();
+
     // loop through all the clients
     for (client in data)
 
     {
         // get the actual coordinates for the current client from the data object.
-        coords = data[client];
+        userData = data[client];
+
         // set the color we picked for this client.
-        context.fillStyle = coords.color;
+        context.fillStyle = userData.data.color;
         // draw a small rectangle at the clients mouse coordinates.
-        if (coords.shape == "Circle"){
-            drawCircle(coords.x,coords.y,coords.size,coords.color, context);
+        if (userData.data.shape == "Circle"){
+            drawCircle(userData.data.x,userData.data.y,userData.data.size,userData.data.color, context);
         }
 
-        else if (coords.shape == "Triangle"){
-        drawTriangle (coords.x,coords.y,coords.color, context, coords.size);
+        else if (userData.data.shape == "Triangle"){
+        drawTriangle (userData.data.x,userData.data.y,userData.data.color, context, userData.data.size);
         }
 
-        else if (coords.shape == "Square"){
-        drawSquare (coords.x, coords.y, coords.color, context, coords.size);
+        else if (userData.data.shape == "Square"){
+        drawSquare (userData.data.x, userData.data.y, userData.data.color, context, userData.data.size);
         }
 
-    if (userExists(coords.username)) {}
-    else {
-      $("#userlist").append('<li>' + coords.username + '</li>');
+        $("#userlist").append('<li>' + userData.userName + '</li>');
     }
-
 });
 
 
@@ -171,10 +193,79 @@ function downloadImage (l)
   }
 
 function userExists (username)
-  {
+{
   return $('#userlist li:contains('+username+')').length;
+}
 
-  }
+function createUser()
+{
+    var dialog, form, name = $("#name"), allFields = $([]).add(name), tips = $(".validateTips");
+
+    function updateTips( t ) {
+      tips
+        .text( t )
+        .addClass( "ui-state-highlight" );
+      setTimeout(function() {
+        tips.removeClass( "ui-state-highlight", 1500 );
+      }, 500 );
+    }
+
+    function checkLength( o, n, min, max ) {
+      if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+          min + " and " + max + "." );
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    function checkRegexp( o, regexp, n ) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    function addUser() {
+      var valid = true;
+      allFields.removeClass( "ui-state-error" );
+
+      valid = valid && checkLength( name, "username", 3, 16 );
+      valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+
+      if ( valid ) {
+        connectUser(name.val());
+        dialog.dialog( "close" );
+      }
+      return valid;
+    }
+
+    dialog = $( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 400,
+      width: 350,
+      modal: true,
+      buttons: {
+        "Start": addUser
+      },
+      close: function() {
+        form[ 0 ].reset();
+        allFields.removeClass( "ui-state-error" );
+      }
+    });
+
+    form = dialog.find( "form" ).on( "submit", function( event ) {
+      event.preventDefault();
+      addUser();
+    });
+
+    dialog.dialog( "open" );
+}
 
 </script>
 
