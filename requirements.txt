@@ -17,8 +17,8 @@ Flask-SQLAlchemy==2.4.0
 Flask-WTF==0.14.2
 Flask-User==1.0.1.5
 
-flask-socketio==4.3.2
-python-engineio==3.14.2
+flask-socketio==5.1.0
+python-engineio==4.2.0
 eventlet
 
 # Automated tests
