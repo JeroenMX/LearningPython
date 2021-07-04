@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, url_for, flash, redirect
 import sqlite3
 from werkzeug.exceptions import abort
 from flask_socketio import SocketIO
+from engineio.payload import Payload
 
 Payload.max_decode_packets = 50
 
