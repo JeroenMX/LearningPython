@@ -3,6 +3,7 @@ import sqlite3
 from werkzeug.exceptions import abort
 from flask_socketio import SocketIO
 
+Payload.max_decode_packets = 50
 
 def get_db_connection():
     conn = sqlite3.connect('database.db')
