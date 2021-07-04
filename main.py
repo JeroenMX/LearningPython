@@ -142,5 +142,16 @@ def handle_mouse_position(data):
     sio.emit('all_coords', clients)
 
 
+@sio.event
+def disconnect():
+    print('disconnected sid:' + request.sid)
+    del clients[request.sid]
+
+
+@sio.event
+def connect():
+    print('connected sid:' + request.sid)
+
+
 if __name__ == '__main__':
     sio.run(app, debug=True)
